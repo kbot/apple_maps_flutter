@@ -23,8 +23,8 @@ class AnnotationController: NSObject {
     func getAnnotationView(annotation: FlutterAnnotation) -> MKAnnotationView{
         let identifier :String = annotation.id
         var annotationView = self.mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
-        let oldflutterAnnoation = annotationView?.annotation as? FlutterAnnotation
-        if annotationView == nil || oldflutterAnnoation?.icon.iconType != annotation.icon.iconType {
+        let oldFlutterAnnotation = annotationView?.annotation as? FlutterAnnotation
+        if annotationView == nil || oldFlutterAnnotation?.icon.iconType != annotation.icon.iconType {
             if annotation.icon.iconType == IconType.PIN {
                 annotationView = getPinAnnotationView(annotation: annotation, id: identifier)
             } else if annotation.icon.iconType == IconType.MARKER {
@@ -44,6 +44,7 @@ class AnnotationController: NSObject {
             annotationView!.isDraggable = false
             return annotationView!
         }
+
         if annotation.icon.iconType != .MARKER {
             initInfoWindow(annotation: annotation, annotationView: annotationView!)
             if annotation.icon.iconType != .PIN {
@@ -52,9 +53,17 @@ class AnnotationController: NSObject {
                 annotationView!.centerOffset = CGPoint(x: x, y: y)
             }
         }
+
+        if let rotationValue = annotation.rotation {
+            UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
+                annotationView!.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
+            })
+        }
+
         annotationView!.canShowCallout = true
         annotationView!.alpha = CGFloat(annotation.alpha ?? 1.00)
         annotationView!.isDraggable = annotation.isDraggable ?? false
+        
         return annotationView!
     }
 
@@ -108,8 +117,41 @@ class AnnotationController: NSObject {
     }
 
     private func updateAnnotationOnMap(oldAnnotation: FlutterAnnotation, newAnnotation :FlutterAnnotation) {
-        removeAnnotation(id: oldAnnotation.id)
-        mapView.addAnnotation(newAnnotation)
+        // check if the old annotation is still in view
+        // if it is, just update all it's values
+        if let oldAnnotationView = mapView.view(for: oldAnnotation) {
+            if !newAnnotation.isVisible! {
+                oldAnnotationView.canShowCallout = false
+                oldAnnotationView.alpha = CGFloat(0.0)
+                oldAnnotationView.isDraggable = false
+            }
+            else {
+                oldAnnotationView.canShowCallout = true
+                oldAnnotationView.alpha = CGFloat(newAnnotation.alpha ?? 1.00)
+                oldAnnotationView.isDraggable = newAnnotation.isDraggable ?? false
+            }
+            oldAnnotationView.image = newAnnotation.icon.image
+            if let rotationValue = newAnnotation.rotation, oldAnnotation.rotation != rotationValue {
+                UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
+                    oldAnnotationView.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
+                })
+            }
+            oldAnnotation.coordinate = newAnnotation.coordinate
+            oldAnnotation.icon = newAnnotation.icon
+            oldAnnotation.title = newAnnotation.title
+            oldAnnotation.subtitle = newAnnotation.subtitle
+            oldAnnotation.image = newAnnotation.image
+            oldAnnotation.alpha = newAnnotation.alpha
+            oldAnnotation.isDraggable = newAnnotation.isDraggable
+            oldAnnotation.wasDragged = newAnnotation.wasDragged
+            oldAnnotation.isVisible = newAnnotation.isVisible
+            oldAnnotation.icon = newAnnotation.icon
+            oldAnnotation.rotation = newAnnotation.rotation
+        }
+        else {
+            mapView.removeAnnotation(oldAnnotation)
+            mapView.addAnnotation(newAnnotation)
+        }
     }
 
     private func initInfoWindow(annotation: FlutterAnnotation, annotationView: MKAnnotationView) {
