@@ -19,6 +19,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     var wasDragged: Bool = false
     var isVisible: Bool? = true
     var icon: AnnotationIcon = AnnotationIcon.init()
+    var rotation: Double?
     
     public init(fromDictionary annotationData: Dictionary<String, Any>, registrar: FlutterPluginRegistrar) {
         let position :Array<Double> = annotationData["position"] as! Array<Double>
@@ -31,6 +32,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         self.id = annotationData["annotationId"] as? String
         self.isVisible = annotationData["visible"] as? Bool
         self.isDraggable = annotationData["draggable"] as? Bool
+        self.rotation = annotationData["rotation"] as? Double
         if let alpha: Double = annotationData["alpha"] as? Double {
             self.alpha = alpha
         }
@@ -57,8 +59,8 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     
     static func == (lhs: FlutterAnnotation, rhs: FlutterAnnotation) -> Bool {
         return  lhs.id == rhs.id && lhs.title == rhs.title && lhs.subtitle == rhs.subtitle && lhs.image == rhs.image && lhs.alpha == rhs.alpha
-            && lhs.isDraggable == rhs.isDraggable && lhs.wasDragged == rhs.wasDragged && lhs.isVisible == rhs.isVisible && lhs.icon == rhs.icon
-            && lhs.coordinate.latitude == rhs.coordinate.latitude && lhs.coordinate.longitude == rhs.coordinate.longitude
+            && lhs.isDraggable == rhs.isDraggable && lhs.wasDragged == rhs.wasDragged && lhs.isVisible == rhs.isVisible && lhs.icon == rhs.icon 
+            && lhs.rotation == rhs.rotation && lhs.coordinate.latitude == rhs.coordinate.latitude && lhs.coordinate.longitude == rhs.coordinate.longitude
     }
     
     static func != (lhs: FlutterAnnotation, rhs: FlutterAnnotation) -> Bool {
