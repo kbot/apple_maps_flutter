@@ -154,6 +154,7 @@ class Annotation {
     this.onTap,
     this.visible = true,
     this.onDragEnd,
+    this.rotation = 0.0,
   }) : assert(0.0 <= alpha && alpha <= 1.0);
 
   /// Uniquely identifies a [Annotation].
@@ -193,6 +194,9 @@ class Annotation {
 
   final ValueChanged<LatLng>? onDragEnd;
 
+  /// Rotation of the marker image in degrees clockwise from the [anchor] point.
+  final double? rotation;
+
   /// Creates a new [Annotation] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   Annotation copyWith({
@@ -206,6 +210,7 @@ class Annotation {
     bool? visibleParam,
     VoidCallback? onTapParam,
     ValueChanged<LatLng>? onDragEndParam,
+    double? rotationParam,
   }) {
     return Annotation(
       annotationId: annotationId,
@@ -218,6 +223,7 @@ class Annotation {
       onTap: onTapParam ?? onTap,
       visible: visibleParam ?? visible,
       onDragEnd: onDragEndParam ?? onDragEnd,
+      rotation: rotationParam ?? rotation,
     );
   }
 
@@ -238,6 +244,7 @@ class Annotation {
     addIfPresent('infoWindow', infoWindow._toJson());
     addIfPresent('visible', visible);
     addIfPresent('position', position._toJson());
+    addIfPresent('rotation', rotation);
     return json;
   }
 
