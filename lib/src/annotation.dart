@@ -249,7 +249,7 @@ class Annotation {
   @override
   String toString() {
     return 'Annotation{annotationId: $annotationId, alpha: $alpha, draggable: $draggable,'
-        'icon: $icon, infoWindow: $infoWindow, position: $position ,visible: $visible, onTap: $onTap}';
+        'icon: $icon, infoWindow: $infoWindow, position: $position ,visible: $visible, onTap: $onTap, rotation: $rotation,}';
   }
 }
 
