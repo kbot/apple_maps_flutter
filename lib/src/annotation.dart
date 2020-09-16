@@ -155,6 +155,7 @@ class Annotation {
     this.visible = true,
     this.zIndex = -1,
     this.onDragEnd,
+    this.rotation = 0.0,
   }) : assert(0.0 <= alpha && alpha <= 1.0);
 
   /// Uniquely identifies a [Annotation].
@@ -201,6 +202,9 @@ class Annotation {
   /// earlier, and thus appearing to be closer to the surface of the Earth.
   double zIndex;
 
+  /// Rotation of the marker image in degrees clockwise from the [anchor] point.
+  final double rotation;
+
   /// Creates a new [Annotation] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   Annotation copyWith({
@@ -215,6 +219,7 @@ class Annotation {
     double? zIndexParam,
     VoidCallback? onTapParam,
     ValueChanged<LatLng>? onDragEndParam,
+    double? rotationParam,
   }) {
     return Annotation(
       annotationId: annotationId,
@@ -228,6 +233,7 @@ class Annotation {
       visible: visibleParam ?? visible,
       zIndex: zIndexParam ?? zIndex,
       onDragEnd: onDragEndParam ?? onDragEnd,
+      rotation: rotationParam ?? rotation,
     );
   }
 
@@ -249,6 +255,7 @@ class Annotation {
     addIfPresent('visible', visible);
     addIfPresent('position', position._toJson());
     addIfPresent('zIndex', zIndex);
+    addIfPresent('rotation', rotation);
     return json;
   }
 
@@ -275,7 +282,7 @@ class Annotation {
   String toString() {
     return 'Annotation{annotationId: $annotationId, alpha: $alpha, draggable: $draggable, '
         'icon: $icon, infoWindow: $infoWindow, position: $position ,visible: $visible, '
-        'onTap: $onTap}, zIndex: $zIndex, onTap: $onTap}';
+        'onTap: $onTap}, zIndex: $zIndex, rotation: $rotation, onTap: $onTap}';
   }
 }
 

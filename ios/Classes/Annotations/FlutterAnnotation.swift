@@ -24,6 +24,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     var calloutOffset: Offset = Offset()
     var icon: AnnotationIcon = AnnotationIcon.init()
     var selectedProgrammatically: Bool = false
+    var rotation: Double?
     
     public init(fromDictionary annotationData: Dictionary<String, Any>, registrar: FlutterPluginRegistrar) {
         let position: Array<Double> = annotationData["position"] as! Array<Double>
@@ -40,6 +41,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         if let zIndex = annotationData["zIndex"] as? Double {
             self.zIndex = zIndex
         }
+        self.rotation = annotationData["rotation"] as? Double
         
         if let alpha: Double = annotationData["alpha"] as? Double {
             self.alpha = alpha

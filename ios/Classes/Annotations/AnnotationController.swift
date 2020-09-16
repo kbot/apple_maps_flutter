@@ -76,6 +76,14 @@ extension AppleMapController: AnnotationDelegate {
         annotationView!.alpha = CGFloat(annotation.alpha ?? 1.00)
         annotationView!.isDraggable = annotation.isDraggable ?? false
 
+        annotationView!.layer.zPosition = CGFloat(annotation.zIndex ?? 0.0)
+
+        if let rotationValue = annotation.rotation {
+            UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
+                annotationView!.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
+            })
+        }
+        
         return annotationView!
     }
 
@@ -214,12 +222,16 @@ extension AppleMapController: AnnotationDelegate {
                 oldAnnotation.isVisible = annotation.isVisible
                 oldAnnotation.title = annotation.title
                 oldAnnotation.subtitle = annotation.subtitle
+                oldAnnotation.rotation = annotation.rotation
             })
-            
+
             // Update the annotation view with the new image
             if let view = self.mapView.view(for: oldAnnotation) {
                 let newAnnotationView = getAnnotationView(annotation: annotation)
                 view.image = newAnnotationView.image
+                if let zIndex = annotation.zIndex, oldAnnotation.zIndex != zIndex {
+                    view.layer.zPosition = CGFloat(zIndex)
+                }
             }
         }
     }
