@@ -63,6 +63,8 @@ class AnnotationController: NSObject {
         annotationView!.canShowCallout = true
         annotationView!.alpha = CGFloat(annotation.alpha ?? 1.00)
         annotationView!.isDraggable = annotation.isDraggable ?? false
+
+        annotationView!.layer.zPosition = CGFloat(annotation.zPosition ?? 0.0)
         
         return annotationView!
     }
@@ -136,6 +138,9 @@ class AnnotationController: NSObject {
                     oldAnnotationView.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
                 })
             }
+            if let zPosition = newAnnotation.zPosition, oldAnnotation.zPosition != zPosition {
+                oldAnnotationView.layer.zPosition = CGFloat(zPosition)
+            }
             oldAnnotation.coordinate = newAnnotation.coordinate
             oldAnnotation.icon = newAnnotation.icon
             oldAnnotation.title = newAnnotation.title
@@ -147,6 +152,7 @@ class AnnotationController: NSObject {
             oldAnnotation.isVisible = newAnnotation.isVisible
             oldAnnotation.icon = newAnnotation.icon
             oldAnnotation.rotation = newAnnotation.rotation
+            oldAnnotation.zPosition = newAnnotation.zPosition
         }
         else {
             mapView.removeAnnotation(oldAnnotation)
