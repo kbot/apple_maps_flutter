@@ -20,6 +20,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     var isVisible: Bool? = true
     var icon: AnnotationIcon = AnnotationIcon.init()
     var rotation: Double?
+    var zPosition: Double? = 0.0
     
     public init(fromDictionary annotationData: Dictionary<String, Any>, registrar: FlutterPluginRegistrar) {
         let position :Array<Double> = annotationData["position"] as! Array<Double>
@@ -33,6 +34,9 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         self.isVisible = annotationData["visible"] as? Bool
         self.isDraggable = annotationData["draggable"] as? Bool
         self.rotation = annotationData["rotation"] as? Double
+        if let zPosition = annotationData["zPosition"] as? Double {
+            self.zPosition = zPosition
+        }
         if let alpha: Double = annotationData["alpha"] as? Double {
             self.alpha = alpha
         }

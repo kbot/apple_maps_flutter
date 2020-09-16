@@ -152,6 +152,8 @@ class Annotation {
     this.visible = true,
     this.onDragEnd,
     this.rotation = 0.0,
+    this.zPosition = 0.0,
+    this.anchor = const Offset(0.5, 0.5),
   }) : assert(alpha == null || (0.0 <= alpha && alpha <= 1.0));
 
   /// Uniquely identifies a [Annotation].
@@ -187,6 +189,12 @@ class Annotation {
   /// Rotation of the marker image in degrees clockwise from the [anchor] point.
   final double rotation;
 
+  // zPosition of the Annotation
+  final double zPosition;
+
+  /// marker relative point for position; [anchor] is (0.5, 1.0) bottom center by default
+  final Offset anchor;
+
   /// Creates a new [Annotation] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   Annotation copyWith({
@@ -200,6 +208,8 @@ class Annotation {
     VoidCallback onTapParam,
     ValueChanged<LatLng> onDragEndParam,
     double rotationParam,
+    double zPositionParam,
+    Offset anchorParam,
   }) {
     return Annotation(
       annotationId: annotationId,
@@ -212,6 +222,8 @@ class Annotation {
       visible: visibleParam ?? visible,
       onDragEnd: onDragEndParam ?? onDragEnd,
       rotation: rotationParam ?? rotation,
+      zPosition: zPositionParam ?? zPosition,
+      anchor: anchorParam ?? anchor,
     );
   }
 
@@ -232,6 +244,8 @@ class Annotation {
     addIfPresent('visible', visible);
     addIfPresent('position', position?._toJson());
     addIfPresent('rotation', rotation);
+    addIfPresent('zPosition', zPosition);
+    addIfPresent('anchor', anchor != null ? [anchor.dx, anchor.dy] : null);
     return json;
   }
 
@@ -249,7 +263,8 @@ class Annotation {
   @override
   String toString() {
     return 'Annotation{annotationId: $annotationId, alpha: $alpha, draggable: $draggable,'
-        'icon: $icon, infoWindow: $infoWindow, position: $position ,visible: $visible, onTap: $onTap, rotation: $rotation,}';
+        'icon: $icon, infoWindow: $infoWindow, position: $position ,visible: $visible,' 
+        'onTap: $onTap, rotation: $rotation, zPosition: $zPosition,}';
   }
 }
 
