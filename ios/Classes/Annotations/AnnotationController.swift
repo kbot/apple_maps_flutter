@@ -151,7 +151,7 @@ extension AppleMapController: AnnotationDelegate {
                 })
             }
             if let zPosition = newAnnotation.zPosition, oldAnnotation.zPosition != zPosition {
-                oldAnnotationView.layer.zPosition = zPosition
+                oldAnnotationView.layer.zPosition = CGFloat(zPosition)
             }
             oldAnnotation.coordinate = newAnnotation.coordinate
             oldAnnotation.icon = newAnnotation.icon
