@@ -40,6 +40,8 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
     var circleController: CircleController
     var initialCameraPosition: [String: Any]
     var options: [String: Any]
+    var onCalloutTapGestureRecognizer: UITapGestureRecognizer?
+    var currentlySelectedAnnotation: String?
     
     public init(withFrame frame: CGRect, withRegistrar registrar: FlutterPluginRegistrar, withargs args: Dictionary<String, Any> ,withId id: Int64) {
         self.options = args["options"] as! [String: Any]
@@ -72,8 +74,9 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
         if let circlesToAdd: NSArray = args["circlesToAdd"] as? NSArray {
             self.circleController.addCircles(circleData: circlesToAdd)
         }
+        
+        self.onCalloutTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.calloutTapped(_:)))
     }
-    
     
     public func view() -> UIView {
         return mapView
@@ -91,9 +94,19 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
     
     public func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView)  {
         if let annotation :FlutterAnnotation = view.annotation as? FlutterAnnotation  {
+            if annotation.infoWindowConsumesTapEvents {
+                view.addGestureRecognizer(self.onCalloutTapGestureRecognizer!)
+            }
+            self.currentlySelectedAnnotation = annotation.id
             self.annotationController.onAnnotationClick(annotation: annotation)
         }
     }
+    
+    public func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+        self.currentlySelectedAnnotation = nil
+        view.removeGestureRecognizer(self.onCalloutTapGestureRecognizer!)
+    }
+
     
     public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if annotation is MKUserLocation {
@@ -115,21 +128,39 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
         return MKOverlayRenderer()
     }
     
+    @objc func calloutTapped(_ sender: UITapGestureRecognizer? = nil) {
+        if self.currentlySelectedAnnotation != nil {
+            self.channel.invokeMethod("infoWindow#onTap", arguments: ["annotationId": self.currentlySelectedAnnotation!])
+        }
+    }
+    
     private func setMethodCallHandlers() {
         channel.setMethodCallHandler({(call: FlutterMethodCall, result: FlutterResult) -> Void in
             if let args :Dictionary<String, Any> = call.arguments as? Dictionary<String,Any> {
                 switch(call.method) {
                 case "annotations#update":
                     if let annotationsToAdd = args["annotationsToAdd"] as? NSArray {
-                        self.annotationController.annotationsToAdd(annotations: annotationsToAdd)
+                        if annotationsToAdd.count > 0 {
+                            self.annotationController.annotationsToAdd(annotations: annotationsToAdd)
+                        }
                     }
                     if let annotationsToChange = args["annotationsToChange"] as? NSArray {
-                        self.annotationController.annotationsToChange(annotations: annotationsToChange)
+                        if annotationsToChange.count > 0 {
+                            self.annotationController.annotationsToChange(annotations: annotationsToChange)
+                        }
                     }
                     if let annotationsToDelete = args["annotationIdsToRemove"] as? NSArray {
-                        self.annotationController.annotationsIdsToRemove(annotationIds: annotationsToDelete)
+                        if annotationsToDelete.count > 0 {
+                            self.annotationController.annotationsIdsToRemove(annotationIds: annotationsToDelete)
+                        }
                     }
                     result(nil)
+                case "annotations#showInfoWindow":
+                    self.annotationController.showAnnotation(with: args["annotationId"] as! String)
+                case "annotations#hideInfoWindow":
+                    self.annotationController.hideAnnotation(with: args["annotationId"] as! String)
+                case "annotations#isInfoWindowShown":
+                    result(self.annotationController.isAnnotationSelected(with: args["annotationId"] as! String))
                 case "polylines#update":
                     if let polylinesToAdd: NSArray = args["polylinesToAdd"] as? NSArray {
                         self.polylineController.addPolylines(polylineData: polylinesToAdd)
@@ -168,15 +199,30 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
                 case "camera#animate":
                     let positionData :Dictionary<String, Any> = self.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: true)
                     if !positionData.isEmpty {
-                        self.mapView.setCenterCoordinate(positionData, animated: true)
+                        guard let _ = positionData["moveToBounds"] else {
+                            self.mapView.setCenterCoordinate(positionData, animated: true)
+                            return
+                        }
+                        self.mapView.setBounds(positionData, animated: true)
                     }
                     result(nil)
                 case "camera#move":
                     let positionData :Dictionary<String, Any> = self.toPositionData(data: args["cameraUpdate"] as! Array<Any>, animated: false)
                     if !positionData.isEmpty {
-                        self.mapView.setCenterCoordinate(positionData, animated: false)
+                        guard let _ = positionData["moveToBounds"] else {
+                            self.mapView.setCenterCoordinate(positionData, animated: false)
+                            return
+                        }
+                        self.mapView.setBounds(positionData, animated: false)
                     }
                     result(nil)
+                case "camera#convert":
+                    guard let annotation = args["annotation"] as? Array<Double> else {
+                        result(nil)
+                        return
+                    }
+                    let point = self.mapView.convert(CLLocationCoordinate2D(latitude: annotation[0] , longitude: annotation[1]), toPointTo: self.view())
+                    result(["point": [point.x, point.y]])
                 default:
                     result(FlutterMethodNotImplemented)
                     return
@@ -203,6 +249,8 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
                     result(self.mapView.isMyLocationButtonShowing ?? false)
                 case "map#getMinMaxZoomLevels":
                     result([self.mapView.minZoomLevel, self.mapView.maxZoomLevel])
+                case "camera#getZoomLevel":
+                    result(self.mapView.calculatedZoomLevel)
                 default:
                     result(FlutterMethodNotImplemented)
                     return
@@ -227,6 +275,11 @@ public class AppleMapController : NSObject, FlutterPlatformView, MKMapViewDelega
                 if let _positionData: Array<Any> = data[1] as? Array<Any> {
                     let zoom: Double = data[2] as? Double ?? 0
                     positionData = ["target": _positionData, "zoom": zoom]
+                }
+            case "newLatLngBounds":
+                if let _positionData: Array<Any> = data[1] as? Array<Any> {
+                    let padding: Double = data[2] as? Double ?? 0
+                    positionData = ["target": _positionData, "padding": padding, "moveToBounds": true]
                 }
             case "zoomBy":
                 if let zoomBy: Double = data[1] as? Double {

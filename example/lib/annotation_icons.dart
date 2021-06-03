@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:apple_maps_flutter/apple_maps_flutter.dart';
+import 'package:flutter/material.dart';
 
 import 'page.dart';
 
@@ -23,34 +23,24 @@ class AnnotationIconsBody extends StatefulWidget {
   State<StatefulWidget> createState() => AnnotationIconsBodyState();
 }
 
-const LatLng _kMapCenter = LatLng(52.4478, -3.5402);
+const LatLng _kMapCenter = LatLng(52.707755, -2.7540658);
 
 class AnnotationIconsBodyState extends State<AnnotationIconsBody> {
-  AppleMapController controller;
-  BitmapDescriptor _annotationIcon;
+  late AppleMapController controller;
+  BitmapDescriptor? _annotationIcon;
 
   @override
   Widget build(BuildContext context) {
     _createAnnotationImageFromAsset(context);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Center(
-          child: SizedBox(
-            width: 350.0,
-            height: 300.0,
-            child: AppleMap(
-              initialCameraPosition: const CameraPosition(
-                target: _kMapCenter,
-                zoom: 7,
-              ),
-              annotations: _createAnnotation(),
-              onMapCreated: _onMapCreated,
-            ),
-          ),
-        )
-      ],
+    return SafeArea(
+      child: AppleMap(
+        initialCameraPosition: const CameraPosition(
+          target: _kMapCenter,
+          zoom: 8,
+        ),
+        annotations: _createAnnotation(),
+        onMapCreated: _onMapCreated,
+      ),
     );
   }
 
@@ -58,8 +48,9 @@ class AnnotationIconsBodyState extends State<AnnotationIconsBody> {
     return <Annotation>[
       Annotation(
         annotationId: AnnotationId("annotation_1"),
-        position: _kMapCenter,
-        icon: _annotationIcon,
+        anchor: Offset(0.5, -4),
+        position: LatLng(52.707755, -2.7540658),
+        icon: _annotationIcon ?? BitmapDescriptor.defaultAnnotation,
       ),
     ].toSet();
   }
@@ -67,9 +58,9 @@ class AnnotationIconsBodyState extends State<AnnotationIconsBody> {
   Future<void> _createAnnotationImageFromAsset(BuildContext context) async {
     if (_annotationIcon == null) {
       final ImageConfiguration imageConfiguration =
-          createLocalImageConfiguration(context);
+          new ImageConfiguration(devicePixelRatio: 1.0);
       BitmapDescriptor.fromAssetImage(
-              imageConfiguration, 'assets/red_square.png')
+              imageConfiguration, 'assets/test_marker.png')
           .then(_updateBitmap);
     }
   }

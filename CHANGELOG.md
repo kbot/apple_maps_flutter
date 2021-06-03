@@ -1,3 +1,55 @@
+## 1.0.0
+
+Tanks to @jonbhanson
+* Adds null safety.
+* Refreshes the example app.
+* Updates .gitignore and removes files that should not be tracked.
+
+## 0.1.4
+
+* Animate to bounds was added. (Thanks to @nghiashiyi)
+* Fixed an issue where the user location was only displayed in `authorizationInUse` status. (Thanks to @zgosalvez)
+
+* minor fixes
+
+## 0.1.3
+
+* Thanks to @maxiundtesa the getter for the current zoomLevel was added
+* iOS build failure for Flutter modules was fixed
+
+## 0.1.2+5
+
+* Fixed build failure
+* Added anchor param to Annotation
+* Added missing comparison of Overlay coordinates, which caused
+  Circles, Annotations, Polylines and Ploygons to not update correctly
+  on coordinate changes.
+
+## 0.1.2+4
+
+* Added configurable Anchor for infoWindows
+
+## 0.1.2+3
+
+* Fixed the offset of custom markers
+
+## 0.1.2+2
+
+* Fixed the onTap event for Annotation Callouts
+
+## 0.1.2+1
+
+* Added custom annotation icons from byte data
+* Fixed scaling of icons from assets => see: https://flutter.dev/docs/development/ui/assets-and-images#declaring-resolution-aware-image-assets
+
+## 0.1.2
+
+* Annotation rework:
+   * onTap for InfoWindow added
+   * Multiline InfoWindow subtitle support
+   * Overall Annotation handling refactored
+   * Correct UserTracking Button added
+
 ## 0.1.1+2
 
 * Fixed map freezing when setState is being called
