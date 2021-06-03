@@ -82,7 +82,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         lhs.isVisible == rhs.isVisible && lhs.icon == rhs.icon && lhs.coordinate.latitude == rhs.coordinate.latitude && 
         lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.infoWindowConsumesTapEvents == rhs.infoWindowConsumesTapEvents && 
         lhs.anchor == rhs.anchor && lhs.calloutOffset == rhs.calloutOffset && lhs.coordinate.latitude == rhs.coordinate.latitude && 
-        lhs.coordinate.longitude == rhs.coordinate.longitude && && lhs.rotation == rhs.rotation
+        lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.rotation == rhs.rotation
     }
     
     static func != (lhs: FlutterAnnotation, rhs: FlutterAnnotation) -> Bool {
