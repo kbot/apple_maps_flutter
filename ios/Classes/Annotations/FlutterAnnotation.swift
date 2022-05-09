@@ -10,7 +10,7 @@ import MapKit
 
 class FlutterAnnotation: NSObject, MKAnnotation {
     @objc dynamic var coordinate: CLLocationCoordinate2D
-    var id :String!
+    var id: String!
     var title: String?
     var subtitle: String?
     var infoWindowConsumesTapEvents: Bool = false
@@ -20,14 +20,15 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     var isDraggable: Bool?
     var wasDragged: Bool = false
     var isVisible: Bool? = true
+    var zIndex: Double = -1
     var calloutOffset: Offset = Offset()
     var icon: AnnotationIcon = AnnotationIcon.init()
     var rotation: Double?
-    var zPosition: Double? = 0.0
+    var selectedProgrammatically: Bool = false
     
     public init(fromDictionary annotationData: Dictionary<String, Any>, registrar: FlutterPluginRegistrar) {
-        let position :Array<Double> = annotationData["position"] as! Array<Double>
-        let infoWindow :Dictionary<String, Any> = annotationData["infoWindow"] as! Dictionary<String, Any>
+        let position: Array<Double> = annotationData["position"] as! Array<Double>
+        let infoWindow: Dictionary<String, Any> = annotationData["infoWindow"] as! Dictionary<String, Any>
         let lat: Double = position[0]
         let long: Double = position[1]
         self.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
@@ -38,9 +39,11 @@ class FlutterAnnotation: NSObject, MKAnnotation {
         self.isVisible = annotationData["visible"] as? Bool
         self.isDraggable = annotationData["draggable"] as? Bool
         self.rotation = annotationData["rotation"] as? Double
-        if let zPosition = annotationData["zPosition"] as? Double {
-            self.zPosition = zPosition
+
+        if let zIndex = annotationData["zIndex"] as? Double {
+            self.zIndex = zIndex
         }
+        
         if let alpha: Double = annotationData["alpha"] as? Double {
             self.alpha = alpha
         }
@@ -57,6 +60,7 @@ class FlutterAnnotation: NSObject, MKAnnotation {
             self.calloutOffset = Offset(from: calloutOffsetJSON)
         }
     }
+    
     
     static private func getAnnotationIcon(iconData: Array<Any>, registrar: FlutterPluginRegistrar, annotationId: String) -> AnnotationIcon {
         let iconTypeMap: Dictionary<String, IconType> = ["fromAssetImage": .CUSTOM_FROM_ASSET, "fromBytes": .CUSTOM_FROM_BYTES, "defaultAnnotation": .PIN, "markerAnnotation": .MARKER]
@@ -77,13 +81,12 @@ class FlutterAnnotation: NSObject, MKAnnotation {
     }
     
     static func == (lhs: FlutterAnnotation, rhs: FlutterAnnotation) -> Bool {
-        return lhs.id == rhs.id && lhs.title == rhs.title && lhs.subtitle == rhs.subtitle && 
-        lhs.image == rhs.image && lhs.alpha == rhs.alpha && lhs.isDraggable == rhs.isDraggable && 
-        lhs.wasDragged == rhs.wasDragged && lhs.isVisible == rhs.isVisible && lhs.icon == rhs.icon && 
-        lhs.coordinate.latitude == rhs.coordinate.latitude && lhs.coordinate.longitude == rhs.coordinate.longitude &&
-         lhs.infoWindowConsumesTapEvents == rhs.infoWindowConsumesTapEvents && lhs.anchor == rhs.anchor &&
-          lhs.calloutOffset == rhs.calloutOffset && lhs.coordinate.latitude == rhs.coordinate.latitude &&
-           lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.rotation == rhs.rotation
+        return lhs.id == rhs.id && lhs.title == rhs.title && lhs.subtitle == rhs.subtitle && lhs.image == rhs.image && 
+        lhs.alpha == rhs.alpha && lhs.isDraggable == rhs.isDraggable && lhs.wasDragged == rhs.wasDragged && 
+        lhs.isVisible == rhs.isVisible && lhs.icon == rhs.icon && lhs.coordinate.latitude == rhs.coordinate.latitude && 
+        lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.infoWindowConsumesTapEvents == rhs.infoWindowConsumesTapEvents && 
+        lhs.anchor == rhs.anchor && lhs.calloutOffset == rhs.calloutOffset && lhs.coordinate.latitude == rhs.coordinate.latitude && 
+        lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.rotation == rhs.rotation && lhs.zIndex == rhs.zIndex
     }
     
     static func != (lhs: FlutterAnnotation, rhs: FlutterAnnotation) -> Bool {
