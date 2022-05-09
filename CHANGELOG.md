@@ -1,6 +1,23 @@
+## 1.1.0
+
+* Added Annotation zIndex
+* Added posibility to take snapshots of the map
+## 1.0.3
+
+* Fixes an issue where mapController.moveCamera would animate the camera transition
+* To animate a camera movement, mapController.animateCamera should be used instead
+
+## 1.0.2
+
+* Removed Android folder to fix build failures
+
+## 1.0.1
+
+* Fixes memory leak
+* Adds ability to take snapshots of the map
 ## 1.0.0
 
-Tanks to @jonbhanson
+Thanks to @jonbhanson
 * Adds null safety.
 * Refreshes the example app.
 * Updates .gitignore and removes files that should not be tracked.
