@@ -232,6 +232,11 @@ extension AppleMapController: AnnotationDelegate {
                 if let zIndex = annotation.zIndex, oldAnnotation.zIndex != zIndex {
                     view.layer.zPosition = CGFloat(zIndex)
                 }
+                if let rotationValue = newAnnotation.rotation, oldAnnotation.rotation != rotationValue {
+                    UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
+                        view.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
+                    })
+                }
             }
         }
     }
