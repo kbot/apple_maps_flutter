@@ -109,6 +109,7 @@ class PlaceAnnotationBodyState extends State<PlaceAnnotationBody> {
         center.longitude + cos(_annotationIdCounter * pi / 6.0) / 20.0,
       ),
       zIndex: annotationCount.toDouble(),
+      rotation: (annotationCount % 4) * 360.0 / 4.0,
       infoWindow: InfoWindow(
           title: annotationIdVal,
           anchor: Offset(0.5, 0.0),
@@ -146,6 +147,16 @@ class PlaceAnnotationBodyState extends State<PlaceAnnotationBody> {
           center.longitude + offset.dx,
         ),
       );
+    });
+  }
+
+  void _changeRotation() {
+    final Annotation annotation = annotations[selectedAnnotationId]!;
+    final double current = annotation.rotation;
+    final double offset = 45.0;
+    setState(() {
+      annotations[selectedAnnotationId] =
+          annotation.copyWith(rotationParam: current + offset);
     });
   }
 
@@ -316,6 +327,10 @@ class PlaceAnnotationBodyState extends State<PlaceAnnotationBody> {
                 TextButton(
                   child: const Text('change position'),
                   onPressed: _changePosition,
+                ),
+                TextButton(
+                  child: const Text('change rotation'),
+                  onPressed: _changeRotation,
                 ),
                 TextButton(
                   child: const Text('toggle visible'),

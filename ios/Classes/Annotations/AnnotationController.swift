@@ -76,12 +76,10 @@ extension AppleMapController: AnnotationDelegate {
         annotationView!.alpha = CGFloat(annotation.alpha ?? 1.00)
         annotationView!.isDraggable = annotation.isDraggable ?? false
 
-        annotationView!.layer.zPosition = CGFloat(annotation.zIndex ?? 0.0)
+        annotationView!.layer.zPosition = CGFloat(annotation.zIndex)
 
         if let rotationValue = annotation.rotation {
-            UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
-                annotationView!.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
-            })
+            annotationView!.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
         }
         
         return annotationView!
@@ -215,6 +213,18 @@ extension AppleMapController: AnnotationDelegate {
     private func updateAnnotation(annotation: FlutterAnnotation) {
         if let oldAnnotation = self.getAnnotation(with: annotation.id) {
             UIView.animate(withDuration: 0.32, animations: {
+                // Update the annotation view with the new image
+                if let view = self.mapView.view(for: oldAnnotation) {
+                    let newAnnotationView = self.getAnnotationView(annotation: annotation)
+                    view.image = newAnnotationView.image
+                    if oldAnnotation.zIndex != annotation.zIndex {
+                        view.layer.zPosition = CGFloat(annotation.zIndex)
+                    }
+                    if let rotationValue = annotation.rotation, oldAnnotation.rotation != rotationValue {
+                        view.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
+                    }
+                }
+
                 oldAnnotation.coordinate = annotation.coordinate
                 oldAnnotation.zIndex = annotation.zIndex
                 oldAnnotation.anchor = annotation.anchor
@@ -224,20 +234,6 @@ extension AppleMapController: AnnotationDelegate {
                 oldAnnotation.subtitle = annotation.subtitle
                 oldAnnotation.rotation = annotation.rotation
             })
-
-            // Update the annotation view with the new image
-            if let view = self.mapView.view(for: oldAnnotation) {
-                let newAnnotationView = getAnnotationView(annotation: annotation)
-                view.image = newAnnotationView.image
-                if let zIndex = annotation.zIndex, oldAnnotation.zIndex != zIndex {
-                    view.layer.zPosition = CGFloat(zIndex)
-                }
-                if let rotationValue = newAnnotation.rotation, oldAnnotation.rotation != rotationValue {
-                    UIView.animate(withDuration: 1, delay: 0, options: [.beginFromCurrentState, .allowAnimatedContent], animations: {
-                        view.transform = CGAffineTransform(rotationAngle: CGFloat(rotationValue * Double.pi / 180.0))
-                    })
-                }
-            }
         }
     }
 
@@ -261,7 +257,7 @@ extension AppleMapController: AnnotationDelegate {
         } else {
             pinAnnotationView = MKPinAnnotationView.init(annotation: annotation, reuseIdentifier: id)
         }
-        pinAnnotationView.layer.zPosition = CGFloat(annotation.zIndex ?? 0.0)
+        pinAnnotationView.layer.zPosition = CGFloat(annotation.zIndex)
 
         if let hueColor: Double = annotation.icon.hueColor {
             pinAnnotationView.pinTintColor = UIColor.init(hue: hueColor, saturation: 1, brightness: 1, alpha: 1)
@@ -274,7 +270,7 @@ extension AppleMapController: AnnotationDelegate {
     private func getMarkerAnnotationView(annotation: FlutterAnnotation, id: String) -> FlutterMarkerAnnotationView {
         self.mapView.register(FlutterMarkerAnnotationView.self, forAnnotationViewWithReuseIdentifier: id)
         let markerAnnotationView: FlutterMarkerAnnotationView = self.mapView.dequeueReusableAnnotationView(withIdentifier: id, for: annotation) as! FlutterMarkerAnnotationView
-        markerAnnotationView.stickyZPosition = CGFloat(annotation.zIndex ?? 0.0)
+        markerAnnotationView.stickyZPosition = CGFloat(annotation.zIndex)
 
         if let hueColor: Double = annotation.icon.hueColor {
             markerAnnotationView.markerTintColor = UIColor.init(hue: hueColor, saturation: 1, brightness: 1, alpha: 1)
