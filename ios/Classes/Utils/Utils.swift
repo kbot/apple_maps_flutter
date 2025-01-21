@@ -53,7 +53,6 @@ class  Utils {
     }
     
     static func roundToTwoDecimalPlaces(number: Double) -> Double {
-        let doubleStr = String(format: "%.2f", ceil(number*100)/100)
-        return Double(doubleStr)!
+        return Double(Int(number*100))/100.0
     }
 }
