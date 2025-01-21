@@ -59,25 +59,16 @@ public extension MKMapView {
     
     var calculatedZoomLevel: Double {
         get {
-            let centerPixelSpaceX = Utils.longitudeToPixelSpaceX(longitude: self.centerCoordinate.longitude)
+            // Calculate distance per pixel at zoom level 21
+            let screenScale = UIScreen.main.scale  // To account for Retina screens
+            let distancePerPixelAtZoom21 = MKMapView.mapWidthAtZoom21 / (256.0 * pow(2.0, maxZoomLevel)) / screenScale
 
-            let lonLeft = self.centerCoordinate.longitude - (self.region.span.longitudeDelta / 2)
+            // Calculate zoom scale
+            let zoomScale = (camera.altitude * tan(MKMapView.fieldOfViewAngle)) / distancePerPixelAtZoom21
 
-            let leftPixelSpaceX = Utils.longitudeToPixelSpaceX(longitude: lonLeft)
-            let pixelSpaceWidth = abs(centerPixelSpaceX - leftPixelSpaceX) * 2
-
-            let zoomScale = pixelSpaceWidth / Double(self.bounds.size.width)
-
-            let zoomExponent = Utils.logC(val: zoomScale, forBase: 2)
-
-            var zoomLevel = 21 - zoomExponent
-            
-            zoomLevel = Utils.roundToTwoDecimalPlaces(number: zoomLevel)
-            
-            Holder._zoomLevel = zoomLevel
-            
+            // Derive zoom level
+            let zoomLevel = maxZoomLevel - log2(zoomScale)
             return zoomLevel
-            
         }
         set (newZoomLevel) {
             Holder._zoomLevel = newZoomLevel
@@ -171,24 +162,19 @@ public extension MKMapView {
         self.setCamera(MKMapCamera(lookingAtCenter: centerCoordinate, fromDistance: CLLocationDistance(altitude), pitch: Holder._pitch, heading: Holder._heading), animated: animated)
     }
     
+    static let earthCircumference: Double = 40_075_016.686  // Earth's circumference in meters
+    static let mapWidthAtZoom21: Double = earthCircumference / 2.0  // Half circumference at zoom level 21
+    static let fieldOfViewAngle: Double = 15.0 * .pi / 180.0  // Field of view in radians
     private func getCameraAltitude(centerCoordinate: CLLocationCoordinate2D, zoomLevel: Double) -> Double {
-        // convert center coordiate to pixel space
-        let centerPixelY = Utils.latitudeToPixelSpaceY(latitude: centerCoordinate.latitude)
-        // determine the scale value from the zoom level
-        let zoomExponent:Double = 21.0 - zoomLevel
-        let zoomScale:Double = pow(2.0, zoomExponent)
-        // scale the map’s size in pixel space
-        let mapSizeInPixels = self.bounds.size
-        let scaledMapHeight = Double(mapSizeInPixels.height) * zoomScale
-        // figure out the position of the top-left pixel
-        let topLeftPixelY = centerPixelY - (scaledMapHeight / 2.0)
-        // find delta between left and right longitudes
-        let maxLat = Utils.pixelSpaceYToLatitude(pixelY: topLeftPixelY + scaledMapHeight)
-        let topBottom = CLLocationCoordinate2D.init(latitude: maxLat, longitude: centerCoordinate.longitude)
-        
-        let distance = MKMapPoint.init(centerCoordinate).distance(to: MKMapPoint.init(topBottom))
-        let altitude = distance / tan(.pi*(15/180.0))
-        
+        // Calculate distance per pixel at zoom level 21
+        let screenScale = UIScreen.main.scale  // To account for Retina screens
+        let distancePerPixelAtZoom21 = MKMapView.mapWidthAtZoom21 / (256.0 * pow(2.0, maxZoomLevel)) / screenScale
+
+        // Calculate zoom scale
+        let zoomScale = pow(2.0, maxZoomLevel - zoomLevel)
+
+        // Derive altitude
+        let altitude = (distancePerPixelAtZoom21 * zoomScale) / tan(MKMapView.fieldOfViewAngle)
         return altitude
     }
     
